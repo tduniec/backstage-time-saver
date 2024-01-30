@@ -96,7 +96,7 @@ export class DatabaseOperations {
   async getTemplateNameByTsId(templateTaskId: string) {
     try {
       const result = await this.knex.raw(
-        'SELECT template_name FROM "time-saver".ts_template_time_savings WHERE template_task_id = :templateTaskId LIMIT 1',
+        'SELECT template_name FROM ts_template_time_savings WHERE template_task_id = :templateTaskId LIMIT 1',
         { templateTaskId },
       );
       const rows = result.rows[0].template_name;
@@ -110,7 +110,7 @@ export class DatabaseOperations {
   async getStatsByTemplateTaskId(templateTaskId: string) {
     try {
       const result = await this.knex.raw(
-        'SELECT sum(time_saved), team FROM "time-saver".ts_template_time_savings WHERE template_task_id = :templateTaskId GROUP BY team',
+        'SELECT sum(time_saved), team FROM ts_template_time_savings WHERE template_task_id = :templateTaskId GROUP BY team',
         { templateTaskId },
       );
       const rows = result.rows;
@@ -125,7 +125,7 @@ export class DatabaseOperations {
   async getStatsByTeam(team: string) {
     try {
       const result = await this.knex.raw(
-        'SELECT sum(time_saved), template_name from "time-saver".ts_template_time_savings where team = :team group by template_name, team;',
+        'SELECT sum(time_saved), template_name from ts_template_time_savings where team = :team group by template_name, team;',
         { team },
       );
       const rows = result.rows;
@@ -140,7 +140,7 @@ export class DatabaseOperations {
   async getStatsByTemplate(template: string) {
     try {
       const result = await this.knex.raw(
-        'SELECT sum(time_saved), team from "time-saver".ts_template_time_savings where template_name = :template group by template_name, team;',
+        'SELECT sum(time_saved), team from ts_template_time_savings where template_name = :template group by template_name, team;',
         { template },
       );
       const rows = result.rows;
@@ -155,7 +155,7 @@ export class DatabaseOperations {
   async getAllStats() {
     try {
       const result = await this.knex.raw(
-        'SELECT sum(time_saved), team, template_name from "time-saver".ts_template_time_savings group by team, template_name;',
+        'SELECT sum(time_saved), team, template_name from ts_template_time_savings group by team, template_name;',
       );
       const rows = result.rows;
       this.logger.info(`Data selected successfully ${JSON.stringify(rows)}`);
@@ -171,12 +171,12 @@ export class DatabaseOperations {
       const result = await this.knex.raw(`
                 SELECT
                 ROUND(
-                    (SUM(time_saved)::numeric / (SELECT SUM(time_saved)::numeric FROM "time-saver".ts_template_time_savings WHERE "time-saver".ts_template_time_savings.team = team)) * 100,
+                    (SUM(time_saved)::numeric / (SELECT SUM(time_saved)::numeric FROM ts_template_time_savings WHERE ts_template_time_savings.team = team)) * 100,
                     2
                 ) AS percentage,
                 team
                 FROM
-                "time-saver".ts_template_time_savings
+                ts_template_time_savings
                 GROUP BY
                 team;
             `);
@@ -197,7 +197,7 @@ export class DatabaseOperations {
             team,
             SUM(time_saved) AS total_time_saved
           FROM 
-            "time-saver".ts_template_time_savings
+            ts_template_time_savings
           GROUP BY 
             TO_CHAR(DATE_TRUNC('day', created_at), 'YYYY-MM-DD'),
             team
@@ -221,7 +221,7 @@ export class DatabaseOperations {
             template_name,
             SUM(time_saved) AS total_time_saved
             FROM 
-            "time-saver".ts_template_time_savings
+            ts_template_time_savings
             GROUP BY 
             TO_CHAR(DATE_TRUNC('day', created_at), 'YYYY-MM-DD'),
             template_name
@@ -246,7 +246,7 @@ export class DatabaseOperations {
             team,
             SUM(time_saved) OVER (PARTITION BY team ORDER BY DATE_TRUNC('day', created_at)) AS total_time_saved
           FROM
-            "time-saver".ts_template_time_savings
+            ts_template_time_savings
           ORDER BY
             team, TO_CHAR(DATE_TRUNC('day', created_at), 'YYYY-MM-DD'), created_at;
             `);
@@ -268,7 +268,7 @@ export class DatabaseOperations {
             template_name,
             SUM(time_saved) OVER (PARTITION BY template_name ORDER BY DATE_TRUNC('day', created_at)) AS total_time_saved
             FROM
-            "time-saver".ts_template_time_savings
+            ts_template_time_savings
             ORDER BY
             TO_CHAR(DATE_TRUNC('day', created_at), 'YYYY-MM-DD');            
             `);

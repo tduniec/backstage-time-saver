@@ -39,6 +39,7 @@ import { TemplateCountGauge } from '../Gauge/TemplatesTaskCountGauge';
 import { TimeSavedGauge } from '../Gauge/TimeSavedGauge';
 import { TeamsGauge } from '../Gauge/TeamsGauge';
 import { TemplatesGauge } from '../Gauge/TemplatesGauge';
+import { EmptyTimeSaver } from '../Gauge/EmptyDbContent';
 
 export const TimeSaverPageComponent = () => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -122,6 +123,7 @@ export const TimeSaverPageComponent = () => {
             queries
           </SupportButton>
         </ContentHeader>
+        <EmptyTimeSaver />
         <Grid container spacing={3} direction="column">
           <Grid item>
             <InfoCard title="Time statistics that you have saved using Backstage Templates">

@@ -21,10 +21,18 @@
  */
 exports.up = async function up(knex) {
   //  create function only for postgres
+  let namespace = '';
   if (knex.client.config.client === 'pg') {
     await knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"').then(() => {
       console.log('uuid-ossp extension enabled');
     });
+    namespace = await knex
+      .raw(
+        `SELECT (select nspname from pg_catalog.pg_namespace where oid=extnamespace)
+    FROM pg_extension where extname='uuid-ossp';`,
+      )
+      .then(s => s.rows[0].nspname);
+    console.log(`uuid-ossp extension created in ${namespace} schema`);
     await knex.schema.createTable('ts_template_time_savings', table => {
       table.comment(
         'Table contains template time savings with relation to the templateTaskId',
@@ -32,7 +40,7 @@ exports.up = async function up(knex) {
       table
         .uuid('id')
         .primary()
-        .defaultTo(knex.raw('public.uuid_generate_v4()::uuid'))
+        .defaultTo(knex.raw(`${namespace}.uuid_generate_v4()::uuid`))
         .comment('UUID');
       table
         .timestamp('created_at', { useTz: false, precision: 0 })
